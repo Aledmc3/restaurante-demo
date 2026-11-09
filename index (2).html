@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Panel de cocina</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0f172a; --bg:#eef2f7; --card:#ffffff; --mut:#5b6472; --line:#dde3ea;
+  --ac:#0f766e; --ac2:#0d5f59; --danger:#b42318;
+  --shadow:0 1px 2px rgba(16,24,40,.06), 0 6px 18px rgba(16,24,40,.06);
+  --r:14px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.45 Figtree,system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+h1,h2,h3,p,ul,li{margin:0}
+ul{list-style:none;padding:0}
+button{font:inherit;cursor:pointer;color:inherit}
+:focus-visible{outline:3px solid #f59e0b;outline-offset:2px;border-radius:8px}
+img{display:block}
+
+/* ---------- Botones ---------- */
+.btn{min-height:46px;border:0;border-radius:10px;padding:0 16px;background:var(--ac);color:#fff;
+  font-weight:700;font-size:15px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  transition:background .15s,transform .1s}
+.btn:hover{background:var(--ac2)}
+.btn:active{transform:scale(.985)}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+.btn.ghost:hover{background:#f1f5f9}
+.btn.r{background:var(--danger)}
+.btn.sm{min-height:38px;font-size:14px;padding:0 12px}
+.top .btn.ghost{color:#fff;border-color:rgba(255,255,255,.4)}
+.top .btn.ghost:hover{background:rgba(255,255,255,.14)}
+
+/* ---------- Header ---------- */
+.top{background:#0f172a;color:#fff;padding:12px 18px;display:flex;gap:10px;align-items:center;
+  flex-wrap:wrap;position:sticky;top:0;z-index:20}
+.top h1{font-size:19px;font-weight:800;letter-spacing:-.01em}
+.grow{flex:1}
+
+/* ---------- Tabs ---------- */
+.tabs{display:flex;gap:6px;padding:12px 18px 0;max-width:1240px;margin:0 auto;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tabs button{padding:0 16px;min-height:46px;border:1px solid var(--line);border-radius:12px;
+  background:#fff;font-weight:700;color:var(--mut);white-space:nowrap;transition:background .15s,color .15s}
+.tabs button.on{background:var(--ac);border-color:var(--ac);color:#fff}
+
+main{max-width:1240px;margin:0 auto;padding:16px 18px 90px}
+
+/* ---------- Tarjetas de pedido ---------- */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.pedido{background:var(--card);border:1px solid var(--line);border-left:6px solid var(--line);
+  border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px}
+.pedido.nuevo{border-left-color:#f59e0b;background:#fffdf6}
+.pedido.preparando{border-left-color:#0ea5e9}
+.pedido.listo{border-left-color:#22c55e;background:#f6fdf9}
+.ped-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ped-head h3{font-size:20px;font-weight:800}
+.ped-meta{color:var(--mut);font-size:14px;font-weight:600}
+.ped-items{display:flex;flex-direction:column;gap:5px}
+.ped-items li{display:flex;justify-content:space-between;gap:10px;font-size:16px}
+.ped-items li b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.nota{background:#fff3cd;border-left:3px solid #f59e0b;padding:8px 10px;border-radius:8px;font-size:15px;color:#5c4300}
+.ped-acciones{display:flex;gap:8px;margin-top:auto}
+.ped-acciones .btn{flex:1}
+.total-row{display:flex;justify-content:space-between;align-items:center;font-size:19px;font-weight:800;
+  padding-top:8px;border-top:1px solid var(--line);font-variant-numeric:tabular-nums}
+
+/* ---------- Chips de estado ---------- */
+.chip-est{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;
+  padding:4px 10px;border-radius:99px;background:#eef2f7;color:#475569;white-space:nowrap}
+.chip-est.nuevo{background:#fde7c3;color:#7a4a00}
+.chip-est.preparando{background:#d8ecf8;color:#0b4a6f}
+.chip-est.listo{background:#cdeedd;color:#0c5232}
+.chip-est.entregado{background:#e6e9ee;color:#3a4353}
+
+/* ---------- Filtros ---------- */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.chip{min-height:44px;padding:0 16px;border-radius:99px;border:1px solid var(--line);background:#fff;
+  font-weight:700;color:var(--mut);display:inline-flex;align-items:center;gap:8px}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip .cnt{background:rgba(0,0,0,.08);border-radius:99px;padding:1px 8px;font-size:13px}
+.chip.on .cnt{background:rgba(255,255,255,.22)}
+
+/* ---------- Llamados ---------- */
+.llamados{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.call{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  background:#fde7c3;border:1.5px solid #f0b429;border-radius:12px;padding:10px 14px;color:#6b3f00;font-weight:600}
+.call small{opacity:.75;font-weight:600}
+
+.vac{color:var(--mut);padding:22px 0;font-size:16px}
+
+/* ---------- Carta ---------- */
+.car-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.car-head h2{font-size:20px;font-weight:800}
+.cat-block{margin-bottom:24px}
+.cat-head{display:flex;justify-content:space-between;align-items:center;gap:10px;
+  padding:8px 0;border-bottom:2px solid var(--line);margin-bottom:10px}
+.cat-head h3{font-size:18px;font-weight:800}
+.cat-head small{color:var(--mut);font-weight:600}
+.cat-acc{display:flex;gap:6px}
+.fila{display:flex;gap:12px;align-items:center;background:#fff;border:1px solid var(--line);
+  border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.fila.off{opacity:.55}
+.mini{width:56px;height:56px;flex:none;border-radius:10px;object-fit:cover;background:#eef2f7;
+  display:grid;place-items:center;font-size:22px}
+.fila-info{flex:1;min-width:0}
+.fila-info b{display:block;font-size:16px}
+.fila-info small{display:block;color:var(--mut);font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fila-meta{font-size:14px;font-weight:700;color:var(--ac);margin-top:2px}
+.fila-acc{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.ico{width:44px;height:44px;border-radius:10px;border:1px solid var(--line);background:#fff;
+  font-size:16px;display:grid;place-items:center;transition:background .15s}
+.ico:hover{background:#f1f5f9}
+.ico:disabled{opacity:.28;cursor:not-allowed}
+.ico.on{background:#fde7c3;border-color:#f0b429;color:#7a4a00}
+.ico.danger{color:var(--danger)}
+.star{color:#e0a100}
+.badge{font-size:12px;font-weight:800;padding:2px 8px;border-radius:99px;margin-left:6px}
+.badge.off{background:#fde7c3;color:#7a4a00}
+
+/* ---------- Resumen ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;margin-bottom:26px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.stat span{display:block;color:var(--mut);font-size:14px;font-weight:600}
+.stat b{display:block;font-size:27px;font-weight:800;margin-top:6px;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.tabla-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--line);background:#fff}
+.tabla{width:100%;border-collapse:collapse;min-width:560px}
+.tabla th,.tabla td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--line);font-size:15px}
+.tabla th{background:#f8fafc;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--mut)}
+.tabla tr:last-child td{border-bottom:0}
+h2.bloque-tit{font-size:20px;font-weight:800;margin:26px 0 12px}
+
+/* ---------- Mi local ---------- */
+.bloque{background:#fff;border:1px solid var(--line);border-radius:var(--r);padding:18px;
+  margin-bottom:16px;box-shadow:var(--shadow)}
+.bloque h2{font-size:18px;font-weight:800;margin-bottom:12px}
+.hint{color:var(--mut);font-size:14px;margin:0 0 14px}
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;align-items:end}
+label{display:flex;flex-direction:column;gap:6px;font-weight:700;font-size:14px;color:var(--mut)}
+input,textarea,select{font:inherit;padding:10px 12px;border:1px solid var(--line);border-radius:10px;
+  background:#fff;color:var(--ink);min-height:46px;width:100%}
+input[type=color]{padding:4px;height:46px;cursor:pointer}
+textarea{resize:vertical}
+.chk{flex-direction:row;align-items:center;gap:10px;font-weight:700;color:var(--ink)}
+.chk input{width:22px;height:22px;min-height:0;accent-color:var(--ac)}
+.foto-prev img{max-width:140px;border-radius:10px;margin-top:8px}
+
+.qr-tools{margin:16px 0}
+.qr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:12px}
+.qr-card{border:1px dashed var(--line);border-radius:12px;padding:12px;text-align:center;background:#fff}
+.qr-card svg{width:100%;height:auto;display:block}
+.qr-card b{display:block;margin-top:8px;font-size:15px}
+.qr-card small{display:block;color:var(--mut);font-size:11px;word-break:break-all;margin-top:2px}
+
+/* ---------- Diálogo de plato ---------- */
+dialog{border:0;padding:0;background:transparent;max-width:none;max-height:none;color:var(--ink)}
+dialog::backdrop{background:rgba(9,12,18,.55)}
+.dlg{width:min(520px,calc(100vw - 28px));background:#fff;border-radius:16px;padding:22px;
+  box-shadow:0 24px 70px rgba(0,0,0,.35)}
+.dlg h2{font-size:19px;font-weight:800;margin-bottom:16px}
+.dlg form{display:flex;flex-direction:column;gap:14px}
+.dlg-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px}
+.dlg-actions .btn{min-width:120px}
+
+/* ---------- Puerta del PIN ---------- */
+.gate{position:fixed;inset:0;z-index:1000;background:#0f172a;display:grid;place-items:center;padding:20px}
+.gate[hidden]{display:none}
+.gate-box{background:#fff;border-radius:18px;padding:28px;width:100%;max-width:340px;text-align:center;
+  box-shadow:0 24px 70px rgba(0,0,0,.45)}
+.gate-box h1{font-size:20px;font-weight:800;margin-bottom:6px}
+.gate-box p{color:var(--mut);font-size:15px;margin:0 0 18px}
+.gate-box input{width:100%;font-size:26px;text-align:center;letter-spacing:.4em;padding:12px;
+  min-height:58px;border:2px solid var(--line);border-radius:12px;margin-bottom:14px;font-weight:800}
+.gate-box .btn{width:100%}
+.gate-box .err{color:var(--danger);font-weight:700;min-height:22px;margin:10px 0 0;font-size:14px}
+.gate-box .hint{margin:12px 0 0;font-size:13px}
+
+/* ---------- Aviso flotante ---------- */
+.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,140%);z-index:900;
+  background:#0f172a;color:#fff;padding:12px 20px;border-radius:12px;font-weight:700;font-size:15px;
+  box-shadow:0 12px 34px rgba(0,0,0,.35);transition:transform .3s cubic-bezier(.2,.9,.3,1.2);max-width:calc(100% - 32px);text-align:center}
+.toast.on{transform:translate(-50%,0)}
+
+/* ---------- Impresión ---------- */
+#printArea{display:none}
+@media print{
+  body.printing > *:not(#printArea){display:none !important}
+  body.printing #printArea{display:block !important}
+  body.printing.ticket #printArea{width:72mm;font:13px/1.35 ui-monospace,monospace;color:#000}
+  body.printing.qr #printArea{display:grid !important;grid-template-columns:repeat(3,1fr);gap:6mm}
+  body.printing.qr .qr-card{border:1px solid #999;padding:5mm;text-align:center;break-inside:avoid}
+  body.printing.qr .qr-card svg{width:100%;height:auto}
+  body.printing.qr .qr-card small{font-size:8px}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ Puerta del PIN ============ -->
+<div class="gate" id="gate" hidden>
+  <form class="gate-box" id="gateForm" autocomplete="off">
+    <h1>Panel de cocina</h1>
+    <p>Ingresá el PIN para continuar</p>
+    <input id="pinInput" type="password" inputmode="numeric" maxlength="6"
+           aria-label="PIN de acceso" placeholder="••••">
+    <button class="btn" type="submit">Entrar</button>
+    <p class="err" id="pinErr" role="alert"></p>
+    <p class="hint">Si nunca lo cambiaste, el PIN inicial es <b>1234</b>.</p>
+  </form>
+</div>
+
+<!-- ============ Header ============ -->
+<header class="top">
+  <h1>Panel de cocina</h1>
+  <div class="grow"></div>
+  <button class="btn ghost sm" id="btnFull" type="button">⛶ Pantalla completa</button>
+  <button class="btn ghost sm" id="btnSnd" type="button">🔔 Activar sonido</button>
+  <button class="btn ghost sm" id="btnSalir" type="button">Salir</button>
+</header>
+
+<!-- ============ Pestañas ============ -->
+<nav class="tabs" id="tabs" role="tablist" aria-label="Secciones del panel">
+  <button role="tab" data-t="ped" class="on" aria-selected="true">Pedidos</button>
+  <button role="tab" data-t="mes" aria-selected="false">Mesas y cuentas</button>
+  <button role="tab" data-t="car" aria-selected="false">Carta</button>
+  <button role="tab" data-t="res" aria-selected="false">Resumen</button>
+  <button role="tab" data-t="loc" aria-selected="false">Mi local</button>
+</nav>
+
+<main id="main"></main>
+
+<div id="printArea"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<!-- ============ Diálogo editar / nuevo plato ============ -->
+<dialog id="dlgPlato" class="dlg" aria-labelledby="dlgTitulo">
+  <h2 id="dlgTitulo">Editar plato</h2>
+  <form id="formPlato" autocomplete="off">
+    <label>Nombre <input id="fNombre" maxlength="60" required></label>
+    <label>Categoría <input id="fCat" list="listaCats" maxlength="30" placeholder="Ej. Postres" required></label>
+    <datalist id="listaCats"></datalist>
+    <label>Precio <input id="fPrecio" type="number" min="0" step="50" required></label>
+    <label>Descripción <textarea id="fDesc" rows="2" maxlength="140"></textarea></label>
+    <label>Foto (se achica sola a 640 px) <input id="fFile" type="file" accept="image/*"></label>
+    <div class="foto-prev" id="fPrev"></div>
+    <label class="chk"><input type="checkbox" id="fDest"> Marcar como destacado ⭐</label>
+    <label class="chk"><input type="checkbox" id="fDisp" checked> Disponible</label>
+    <div class="dlg-actions">
+      <button type="button" class="btn ghost" id="fCancelar">Cancelar</button>
+      <button type="submit" class="btn">Guardar</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+/* ============================================================
+   Firebase (NO CAMBIAR)
+   ============================================================ */
+firebase.initializeApp({
+  databaseURL:"https://fir-pedidos-6efa9-default-rtdb.firebaseio.com",
+  projectId:"fir-pedidos-6efa9"
+});
+const db = firebase.database();
+const $  = (s, r=document) => r.querySelector(s);
+const $$all = (s, r=document) => [...r.querySelectorAll(s)];
+
+/* ---------- Utilidades ---------- */
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c =>
+  ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const plata = n => "$" + Number(n||0).toLocaleString("es-AR",{maximumFractionDigits:0});
+const hora  = t => t ? new Date(t).toLocaleTimeString("es-AR",{hour:"2-digit",minute:"2-digit"}) : "—";
+const fechaHora = t => t ? new Date(t).toLocaleString("es-AR",{day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"}) : "—";
+const inicioDelDia = () => { const d = new Date(); d.setHours(0,0,0,0); return d.getTime(); };
+
+/* ---------- Estado ---------- */
+let tab = "ped";
+let menu = {}, pedidos = {}, llamados = {}, cfg = {};
+let filtro = "todos";
+let ctxAudio = null;
+let seenPed = new Set(), seenLla = new Set(), primeraPed = true, primeraLla = true;
+let qrHtml = "";
+let editandoId = null, fotoTmp = "", catSugerida = "";
+
+const SIG = {
+  nuevo:     ["preparando","👨‍🍳 Empezar a preparar"],
+  preparando:["listo","✅ Marcar listo"],
+  listo:     ["entregado","🍽️ Marcar entregado"]
+};
+const ANT = { preparando:"nuevo", listo:"preparando", entregado:"listo" };
+
+/* ============================================================
+   SONIDO
+   ============================================================ */
+function activarSonido(){
+  if(!ctxAudio){
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if(AC) ctxAudio = new AC();
+  }
+  if(ctxAudio && ctxAudio.state === "suspended") ctxAudio.resume();
+  if(ctxAudio) campana();
+  $("#btnSnd").textContent = "🔔 Sonido activado";
+  toast("Sonido activado");
+}
+function campana(){
+  if(!ctxAudio) return;
+  const t0 = ctxAudio.currentTime;
+  [880, 1174.7, 1568].forEach((f, i) => {
+    const o = ctxAudio.createOscillator();
+    const g = ctxAudio.createGain();
+    o.type = "sine";
+    o.frequency.value = f;
+    const t = t0 + i * 0.13;
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.26, t + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0008, t + 0.42);
+    o.connect(g).connect(ctxAudio.destination);
+    o.start(t); o.stop(t + 0.5);
+  });
+}
+
+/* ============================================================
+   TÍTULO PARPADEANTE
+   ============================================================ */
+let pendientesNuevos = 0, timerTitulo = null, tituloOn = false;
+function actualizarTitulo(){
+  if(pendientesNuevos > 0){
+    if(!timerTitulo){
+      timerTitulo = setInterval(() => {
+        tituloOn = !tituloOn;
+        document.title = tituloOn ? "🔔 ¡Pedido nuevo!" : "Panel de cocina";
+      }, 900);
+    }
+    document.title = "🔔 ¡Pedido nuevo!";
+  }else{
+    if(timerTitulo){ clearInterval(timerTitulo); timerTitulo = null; }
+    document.title = "Panel de cocina";
+  }
+}
+
+/* ============================================================
+   AVISO FLOTANTE
+   ============================================================ */
+let tToast = null;
+function toast(t){
+  const el = $("#toast");
+  el.textContent = t;
+  el.classList.add("on");
+  clearTimeout(tToast);
+  tToast = setTimeout(() => el.classList.remove("on"), 2600);
+}
+
+/* ============================================================
+   ORDEN DE LA CARTA (compartido con la carta del cliente)
+   ============================================================ */
+function valOrden(m){
+  const v = m && m.orden;
+  return (v == null || isNaN(Number(v))) ? Infinity : Number(v);
+}
+function ordenMenu(){
+  const catOrd = cfg.catOrden || {};
+  const cats = {};
+  Object.keys(menu).forEach(id => {
+    const c = (menu[id] && menu[id].categoria) || "Otros";
+    (cats[c] = cats[c] || []).push(id);
+  });
+  const catNames = Object.keys(cats).sort((a,b) => {
+    const oa = catOrd[a], ob = catOrd[b];
+    const fa = typeof oa === "number", fb = typeof ob === "number";
+    if(fa && fb) return oa - ob;
+    if(fa) return -1;
+    if(fb) return 1;
+    return a.localeCompare(b, "es");
+  });
+  catNames.forEach(c => cats[c].sort((x,y) => {
+    const d = valOrden(menu[x]) - valOrden(menu[y]);
+    if(d) return d;
+    return String(x).localeCompare(String(y));
+  }));
+  return { cats, catNames };
+}
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+function draw(){
+  // No re-renderizar mientras el usuario escribe en un campo
+  const a = document.activeElement;
+  if(a && a.closest && a.closest("#main") && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return;
+
+  const m = $("#main");
+  if(tab === "ped") m.innerHTML = vPed();
+  else if(tab === "mes") m.innerHTML = vMes();
+  else if(tab === "car") m.innerHTML = vCar();
+  else if(tab === "res") m.innerHTML = vRes();
+  else m.innerHTML = vLoc();
+
+  if(tab === "car") actualizarDatalist();
+}
+
+/* ---------- Pestaña Pedidos ---------- */
+function vPed(){
+  const lla = Object.entries(llamados)
+    .filter(([,l]) => !l.atendido)
+    .sort((a,b) => (a[1].ts||0) - (b[1].ts||0));
+
+  const bloqueLlamados = lla.length
+    ? `<div class="llamados">` + lla.map(([id,l]) => `
+        <div class="call">
+          <span>🔔 <b>Mesa ${esc(l.mesa)}</b> — ${l.tipo === "cuenta" ? "pide la cuenta" : "llama al mozo"} <small>${hora(l.ts)}</small></span>
+          <button class="btn sm" data-act="atender" data-id="${esc(id)}">Atendido</button>
+        </div>`).join("") + `</div>`
+    : "";
+
+  const activos = Object.entries(pedidos)
+    .filter(([,p]) => !p.cerrado && p.estado !== "entregado")
+    .sort((a,b) => (a[1].ts||0) - (b[1].ts||0));
+
+  const cuenta = est => activos.filter(([,p]) => p.estado === est).length;
+  const chips = [
+    ["todos","Todos", activos.length],
+    ["nuevo","Nuevos", cuenta("nuevo")],
+    ["preparando","Preparando", cuenta("preparando")],
+    ["listo","Listos", cuenta("listo")]
+  ].map(([k,l,n]) =>
+    `<button class="chip ${filtro===k?"on":""}" data-act="filtro" data-f="${k}">${l} <span class="cnt">${n}</span></button>`
+  ).join("");
+
+  const lista = filtro === "todos" ? activos : activos.filter(([,p]) => p.estado === filtro);
+
+  const cuerpo = lista.length
+    ? `<div class="grid">` + lista.map(([id,p]) => cardPedido(id,p)).join("") + `</div>`
+    : `<p class="vac">No hay pedidos ${filtro === "todos" ? "pendientes" : "en este estado"}. Los nuevos aparecen acá con sonido.</p>`;
+
+  return bloqueLlamados + `<div class="chips">${chips}</div>` + cuerpo;
+}
+
+function cardPedido(id, p){
+  const sig = SIG[p.estado];
+  const ant = ANT[p.estado];
+  const items = (p.items || []).map(x =>
+    `<li><span>${Number(x.cant)||0} × ${esc(x.nombre)}</span></li>`).join("");
+  return `<article class="pedido ${esc(p.estado)}">
+    <div class="ped-head">
+      <h3>Mesa ${esc(p.mesa)}</h3>
+      <span class="chip-est ${esc(p.estado)}">${esc(p.estado)}</span>
+    </div>
+    <div class="ped-meta">Pedido de las ${hora(p.ts)} · ${plata(p.total)}</div>
+    <ul class="ped-items">${items}</ul>
+    ${p.nota ? `<p class="nota"><b>Nota:</b> ${esc(p.nota)}</p>` : ""}
+    <div class="ped-acciones">
+      ${sig ? `<button class="btn" data-act="estado" data-id="${esc(id)}">${sig[1]}</button>` : ""}
+      ${ant ? `<button class="btn ghost sm" data-act="volver" data-id="${esc(id)}"
+                 title="Volver al estado anterior" aria-label="Volver al estado anterior">↩</button>` : ""}
+    </div>
+  </article>`;
+}
+
+/* ---------- Pestaña Mesas ---------- */
+function vMes(){
+  const porMesa = {};
+  Object.entries(pedidos).filter(([,p]) => !p.cerrado).forEach(([id,p]) => {
+    const k = String(p.mesa);
+    (porMesa[k] = porMesa[k] || []).push([id,p]);
+  });
+  const mesas = Object.keys(porMesa).sort((a,b) => a.localeCompare(b, "es", {numeric:true}));
+  if(!mesas.length) return `<p class="vac">No hay mesas con cuenta abierta.</p>`;
+
+  return `<div class="grid">` + mesas.map(m => {
+    const lista = porMesa[m].sort((a,b) => (a[1].ts||0) - (b[1].ts||0));
+    const total = lista.reduce((a,[,p]) => a + (Number(p.total)||0), 0);
+    return `<article class="pedido">
+      <div class="ped-head">
+        <h3>Mesa ${esc(m)}</h3>
+        <span class="chip-est">${lista.length} pedido${lista.length>1?"s":""}</span>
+      </div>
+      <ul class="ped-items">
+        ${lista.map(([id,p]) => `<li><span>${hora(p.ts)} · ${esc(p.estado)}</span><b>${plata(p.total)}</b></li>`).join("")}
+      </ul>
+      <div class="total-row"><span>Total</span><b>${plata(total)}</b></div>
+      <button class="btn" data-act="cerrar" data-mesa="${esc(m)}">🖨️ Imprimir y cerrar mesa</button>
+    </article>`;
+  }).join("") + `</div>`;
+}
+
+/* ---------- Pestaña Carta ---------- */
+function vCar(){
+  const { cats, catNames } = ordenMenu();
+  if(!catNames.length){
+    return `<div class="vac"><p>La carta está vacía.</p><br>
+      <button class="btn" data-act="seed">Cargar carta de ejemplo</button></div>`;
+  }
+  const cuerpo = catNames.map((c, i) => `
+    <section class="cat-block">
+      <div class="cat-head">
+        <h3>${esc(c)} <small>(${cats[c].length})</small></h3>
+        <div class="cat-acc">
+          <button class="ico" data-act="catSubir" data-cat="${esc(c)}"
+                  aria-label="Subir la categoría ${esc(c)}" ${i===0?"disabled":""}>↑</button>
+          <button class="ico" data-act="catBajar" data-cat="${esc(c)}"
+                  aria-label="Bajar la categoría ${esc(c)}" ${i===catNames.length-1?"disabled":""}>↓</button>
+          <button class="ico" data-act="nuevoPlato" data-cat="${esc(c)}"
+                  aria-label="Agregar un plato en ${esc(c)}">＋</button>
+        </div>
+      </div>
+      ${cats[c].map((id,j) => filaPlato(id, cats[c], j)).join("")}
+    </section>`).join("");
+
+  return `<div class="car-head">
+      <h2>Carta</h2>
+      <button class="btn" data-act="nuevoPlato">＋ Agregar plato</button>
+    </div>` + cuerpo;
+}
+
+function filaPlato(id, lista, idx){
+  const m = menu[id] || {};
+  const off = m.disponible === false;
+  const foto = m.foto
+    ? `<img class="mini" src="${esc(m.foto)}" alt="">`
+    : `<div class="mini" aria-hidden="true">🍽️</div>`;
+  return `<div class="fila ${off?"off":""}">
+    ${foto}
+    <div class="fila-info">
+      <b>${esc(m.nombre)} ${m.destacado ? `<span class="star" title="Destacado">★</span>` : ""}</b>
+      <small>${esc(m.desc || "Sin descripción")}</small>
+      <div class="fila-meta">${plata(m.precio)} ${off ? `<span class="badge off">Sin stock</span>` : ""}</div>
+    </div>
+    <div class="fila-acc">
+      <button class="ico" data-act="platoSubir" data-id="${esc(id)}"
+              aria-label="Subir ${esc(m.nombre)}" ${idx===0?"disabled":""}>↑</button>
+      <button class="ico" data-act="platoBajar" data-id="${esc(id)}"
+              aria-label="Bajar ${esc(m.nombre)}" ${idx===lista.length-1?"disabled":""}>↓</button>
+      <button class="ico ${m.destacado?"on":""}" data-act="destacar" data-id="${esc(id)}"
+              aria-pressed="${!!m.destacado}" aria-label="Destacar ${esc(m.nombre)}">★</button>
+      <button class="ico" data-act="disponible" data-id="${esc(id)}"
+              aria-pressed="${!off}" aria-label="Cambiar disponibilidad de ${esc(m.nombre)}">${off?"🚫":"✅"}</button>
+      <button class="ico" data-act="editar" data-id="${esc(id)}" aria-label="Editar ${esc(m.nombre)}">✎</button>
+      <button class="ico danger" data-act="borrar" data-id="${esc(id)}" aria-label="Borrar ${esc(m.nombre)}">🗑</button>
+    </div>
+  </div>`;
+}
+
+/* ---------- Pestaña Resumen ---------- */
+function vRes(){
+  const desde = inicioDelDia();
+  const delDia = Object.entries(pedidos).filter(([,p]) => (p.ts||0) >= desde);
+
+  const totalVendido = delDia.reduce((a,[,p]) => a + (Number(p.total)||0), 0);
+  const cantPedidos  = delDia.length;
+  const ticketProm   = cantPedidos ? totalVendido / cantPedidos : 0;
+
+  // Platos más pedidos
+  const agg = {};
+  delDia.forEach(([,p]) => (p.items||[]).forEach(x => {
+    const k = x.nombre || "—";
+    agg[k] = agg[k] || { n:0, t:0 };
+    agg[k].n += Number(x.cant) || 0;
+    agg[k].t += (Number(x.cant)||0) * (Number(x.precio)||0);
+  }));
+  const top = Object.entries(agg).sort((a,b) => b[1].n - a[1].n).slice(0,8);
+
+  // Tiempo promedio de preparación (sólo pedidos con tsListo)
+  const tiempos = delDia
+    .filter(([,p]) => p.tsListo && p.ts && p.tsListo > p.ts)
+    .map(([,p]) => p.tsListo - p.ts)
+    .filter(t => t < 3*3600*1000);
+  const promPrep = tiempos.length ? tiempos.reduce((a,b) => a+b, 0) / tiempos.length : null;
+  const minPrep = promPrep == null ? "—" : Math.round(promPrep/60000) + " min";
+
+  const stats = `
+    <div class="stats">
+      <div class="stat"><span>Total vendido hoy</span><b>${plata(totalVendido)}</b></div>
+      <div class="stat"><span>Pedidos de hoy</span><b>${cantPedidos}</b></div>
+      <div class="stat"><span>Ticket promedio</span><b>${plata(ticketProm)}</b></div>
+      <div class="stat"><span>Tiempo promedio de preparación</span><b>${minPrep}</b></div>
+    </div>`;
+
+  const topHtml = top.length
+    ? `<div class="tabla-wrap"><table class="tabla">
+        <thead><tr><th>Plato</th><th>Cantidad</th><th>Facturado</th></tr></thead>
+        <tbody>${top.map(([n,v]) =>
+          `<tr><td>${esc(n)}</td><td>${v.n}</td><td>${plata(v.t)}</td></tr>`).join("")}
+        </tbody></table></div>`
+    : `<p class="vac">Todavía no hay platos vendidos hoy.</p>`;
+
+  const hist = delDia.slice().sort((a,b) => (b[1].ts||0) - (a[1].ts||0)).slice(0,200);
+  const histHtml = hist.length
+    ? `<div class="tabla-wrap"><table class="tabla">
+        <thead><tr><th>Hora</th><th>Mesa</th><th>Ítems</th><th>Total</th><th>Estado</th><th>Cuenta</th></tr></thead>
+        <tbody>${hist.map(([id,p]) => {
+          const nItems = (p.items||[]).reduce((a,x) => a + (Number(x.cant)||0), 0);
+          return `<tr>
+            <td>${fechaHora(p.ts)}</td>
+            <td><b>${esc(p.mesa)}</b></td>
+            <td>${nItems}</td>
+            <td>${plata(p.total)}</td>
+            <td><span class="chip-est ${esc(p.estado)}">${esc(p.estado)}</span></td>
+            <td>${p.cerrado ? "Cerrada" : "Abierta"}</td>
+          </tr>`;
+        }).join("")}</tbody></table></div>`
+    : `<p class="vac">Todavía no hay pedidos hoy.</p>`;
+
+  return `<h2 class="bloque-tit">Resumen de hoy</h2>${stats}
+    <h2 class="bloque-tit">Platos más pedidos</h2>${topHtml}
+    <h2 class="bloque-tit">Historial del día</h2>${histHtml}`;
+}
+
+/* ---------- Pestaña Mi local ---------- */
+function vLoc(){
+  const color = /^#[0-9a-f]{6}$/i.test(cfg.color||"") ? cfg.color : "#0f766e";
+  const baseSug = localStorage.getItem("cocina_qr_base")
+    || (location.origin + location.pathname.replace(/[^/]*$/, ""));
+
+  return `
+  <section class="bloque">
+    <h2>Datos del local</h2>
+    <form id="formLocal" class="form-grid">
+      <label>Nombre del local <input name="nombre" maxlength="40" value="${esc(cfg.nombre||"")}" required></label>
+      <label>Lema <input name="lema" maxlength="60" value="${esc(cfg.lema||"")}" placeholder="Ej. Cocina casera desde 1998"></label>
+      <label>Color principal <input name="color" type="color" value="${esc(color)}"></label>
+      <div><button class="btn" type="submit">Guardar datos</button></div>
+    </form>
+  </section>
+
+  <section class="bloque">
+    <h2>PIN de acceso</h2>
+    <p class="hint">De 4 a 6 números. Ojo: al ser una web estática sin login, el PIN es sólo una traba
+      para que un cliente curioso no toque el panel. Cualquiera que sepa mirar el código o la base
+      puede leerlo. Para seguridad real hace falta Firebase Authentication.</p>
+    <form id="formPin" class="form-grid">
+      <label>PIN nuevo <input name="pin" inputmode="numeric" maxlength="6" pattern="\\d{4,6}"
+        placeholder="4 a 6 números" required autocomplete="off"></label>
+      <div><button class="btn" type="submit">Cambiar PIN</button></div>
+    </form>
+  </section>
+
+  <section class="bloque">
+    <h2>Generador de QR para las mesas</h2>
+    <p class="hint">Poné el link base de tu carta publicada y la cantidad de mesas. Se genera un QR
+      por mesa con el número ya cargado en el link.</p>
+    <form id="formQR" class="form-grid">
+      <label>Link base del sitio
+        <input name="base" value="${esc(baseSug)}" placeholder="https://usuario.github.io/misitio/" required></label>
+      <label>Cantidad de mesas
+        <input name="n" type="number" min="1" max="80" value="10" required></label>
+      <div><button class="btn" type="submit">Generar QR</button></div>
+    </form>
+    ${qrHtml ? `<div class="qr-tools"><button class="btn ghost" data-act="imprimirQR">🖨️ Imprimir todos los QR</button></div>` : ""}
+    <div class="qr-grid" id="qrOut">${qrHtml}</div>
+  </section>`;
+}
+
+/* ============================================================
+   ACCIONES (delegación de eventos)
+   ============================================================ */
+$("#main").addEventListener("click", e => {
+  const b = e.target.closest("[data-act]");
+  if(!b || b.disabled) return;
+  const { act, id, mesa, cat, f } = b.dataset;
+
+  switch(act){
+    case "filtro":      filtro = f; draw(); break;
+    case "estado":      avanzar(id); break;
+    case "volver":      retroceder(id); break;
+    case "atender":     db.ref("llamados/"+id+"/atendido").set(true); break;
+    case "cerrar":      cerrarMesa(mesa); break;
+    case "seed":        seed(); break;
+    case "nuevoPlato":  abrirEditor(null, cat || ""); break;
+    case "editar":      abrirEditor(id); break;
+    case "borrar":      borrarPlato(id); break;
+    case "destacar":    alternarDestacado(id); break;
+    case "disponible":  alternarDisponible(id); break;
+    case "platoSubir":  moverPlato(id, -1); break;
+    case "platoBajar":  moverPlato(id, 1); break;
+    case "catSubir":    moverCategoria(cat, -1); break;
+    case "catBajar":    moverCategoria(cat, 1); break;
+    case "imprimirQR":  imprimirQR(); break;
+  }
+});
+
+$("#main").addEventListener("submit", e => {
+  const t = e.target;
+  if(t.id === "formLocal"){
+    e.preventDefault();
+    const fd = new FormData(t);
+    db.ref("config").update({
+      nombre: String(fd.get("nombre")||"").trim().slice(0,40),
+      lema:   String(fd.get("lema")||"").trim().slice(0,60),
+      color:  String(fd.get("color")||"#0f766e")
+    }).then(() => toast("Datos del local guardados"))
+      .catch(() => toast("No se pudo guardar. Revisá la conexión."));
+  }
+
+  if(t.id === "formPin"){
+    e.preventDefault();
+    const fd = new FormData(t);
+    const pin = String(fd.get("pin")||"").trim();
+    if(!/^\d{4,6}$/.test(pin)){ toast("El PIN debe tener entre 4 y 6 números"); return; }
+    db.ref("config/pin").set(pin)
+      .then(() => { toast("PIN actualizado"); t.reset(); })
+      .catch(() => toast("No se pudo cambiar el PIN"));
+  }
+
+  if(t.id === "formQR"){
+    e.preventDefault();
+    const fd = new FormData(t);
+    const base = String(fd.get("base")||"").trim();
+    const n = Math.max(1, Math.min(80, Number(fd.get("n"))||1));
+    if(!/^https?:\/\//i.test(base)){ toast("El link tiene que empezar con http:// o https://"); return; }
+    try{ localStorage.setItem("cocina_qr_base", base); }catch(err){}
+    generarQR(base, n);
+  }
+});
+
+/* ---------- Cambios de estado ---------- */
+function avanzar(id){
+  const p = pedidos[id]; if(!p) return;
+  const sig = SIG[p.estado]; if(!sig) return;
+  const nuevo = sig[0];
+  const up = {};
+  up["pedidos/"+id+"/estado"] = nuevo;
+  if(nuevo === "listo") up["pedidos/"+id+"/tsListo"] = firebase.database.ServerValue.TIMESTAMP;
+  db.ref().update(up).catch(() => toast("No se pudo actualizar el pedido"));
+}
+function retroceder(id){
+  const p = pedidos[id]; if(!p) return;
+  const ant = ANT[p.estado]; if(!ant) return;
+  db.ref("pedidos/"+id+"/estado").set(ant).catch(() => toast("No se pudo actualizar"));
+}
+
+/* ---------- Cerrar mesa e imprimir cuenta ---------- */
+function cerrarMesa(mesa){
+  const lista = Object.entries(pedidos).filter(([,p]) => !p.cerrado && String(p.mesa) === String(mesa));
+  if(!lista.length) return;
+
+  const agg = {};
+  lista.forEach(([,p]) => (p.items||[]).forEach(x => {
+    const k = (x.nombre||"—") + "|" + (x.precio||0);
+    agg[k] = agg[k] || { nombre: x.nombre, precio: Number(x.precio)||0, cant: 0 };
+    agg[k].cant += Number(x.cant) || 0;
+  }));
+  const total = lista.reduce((a,[,p]) => a + (Number(p.total)||0), 0);
+  const nombreLocal = cfg.nombre || "Mi local";
+
+  const html = `<div style="text-align:center"><b>${esc(nombreLocal)}</b><br>
+      MESA ${esc(mesa)}<br>${new Date().toLocaleString("es-AR")}</div><hr>
+    ${Object.values(agg).map(x =>
+      `${x.cant} × ${esc(x.nombre)}<br>
+       <span style="float:right">${plata(x.cant*x.precio)}</span><br style="clear:both">`).join("")}
+    <hr><div style="display:flex;justify-content:space-between"><b>TOTAL</b><b>${plata(total)}</b></div>
+    <br><div style="text-align:center">¡Gracias por tu visita!</div>`;
+
+  imprimir("ticket", html);
+
+  setTimeout(() => {
+    if(confirm(`¿Se imprimió bien la cuenta de la mesa ${mesa}?\n\nAceptá para cerrarla.`)){
+      const up = {};
+      lista.forEach(([id]) => up["pedidos/"+id+"/cerrado"] = true);
+      db.ref().update(up).then(() => toast("Mesa " + mesa + " cerrada")).catch(() => toast("No se pudo cerrar la mesa"));
+    }
+  }, 400);
+}
+
+/* ---------- Carta: edición ---------- */
+function actualizarDatalist(){
+  const dl = $("#listaCats");
+  if(!dl) return;
+  const cats = [...new Set(Object.values(menu).map(m => m.categoria).filter(Boolean))];
+  dl.innerHTML = cats.map(c => `<option value="${esc(c)}"></option>`).join("");
+}
+
+function abrirEditor(id, catPrevia){
+  editandoId = id || null;
+  catSugerida = catPrevia || "";
+  const m = id ? (menu[id] || {}) : {};
+
+  $("#dlgTitulo").textContent = id ? "Editar plato" : "Nuevo plato";
+  $("#fNombre").value = m.nombre || "";
+  $("#fCat").value = m.categoria || catSugerida || "";
+  $("#fPrecio").value = m.precio ?? "";
+  $("#fDesc").value = m.desc || "";
+  $("#fDest").checked = !!m.destacado;
+  $("#fDisp").checked = m.disponible !== false;
+  fotoTmp = m.foto || "";
+  $("#fPrev").innerHTML = fotoTmp ? `<img src="${esc(fotoTmp)}" alt="Foto del plato">` : "";
+  $("#fFile").value = "";
+
+  actualizarDatalist();
+  $("#dlgPlato").showModal();
+  $("#fNombre").focus();
+}
+
+$("#fCancelar").onclick = () => $("#dlgPlato").close();
+
+/* Achicar la imagen a 640 px y guardarla como data URL JPEG */
+function achicar(file, max = 640){
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const r = Math.min(1, max / Math.max(img.width, img.height));
+      const w = Math.max(1, Math.round(img.width * r));
+      const h = Math.max(1, Math.round(img.height * r));
+      const c = document.createElement("canvas");
+      c.width = w; c.height = h;
+      c.getContext("2d").drawImage(img, 0, 0, w, h);
+      URL.revokeObjectURL(url);
+      try{ resolve(c.toDataURL("image/jpeg", 0.75)); }catch(e){ reject(e); }
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("imagen")); };
+    img.src = url;
+  });
+}
+
+$("#fFile").addEventListener("change", async e => {
+  const f = e.target.files && e.target.files[0];
+  if(!f) return;
+  if(!/^image\//.test(f.type)){ toast("Elegí un archivo de imagen"); return; }
+  try{
+    fotoTmp = await achicar(f, 640);
+    $("#fPrev").innerHTML = `<img src="${esc(fotoTmp)}" alt="Foto del plato">`;
+  }catch(err){
+    toast("No se pudo procesar la imagen");
+  }
+});
+
+$("#formPlato").addEventListener("submit", e => {
+  e.preventDefault();
+  const nombre = $("#fNombre").value.trim();
+  const cat    = $("#fCat").value.trim() || "Otros";
+  const precio = Number($("#fPrecio").value);
+  if(!nombre){ toast("Poné un nombre"); return; }
+  if(!isFinite(precio) || precio < 0){ toast("Precio inválido"); return; }
+
+  const datos = {
+    nombre,
+    categoria: cat,
+    precio,
+    desc: $("#fDesc").value.trim().slice(0,140),
+    foto: fotoTmp || "",
+    destacado: $("#fDest").checked,
+    disponible: $("#fDisp").checked
+  };
+
+  const hacer = editandoId
+    ? db.ref("menu/" + editandoId).update(datos)
+    : (() => {
+        const { cats } = ordenMenu();
+        const enCat = cats[cat] || [];
+        datos.orden = enCat.length;
+        return db.ref("menu").push(datos);
+      })();
+
+  Promise.resolve(hacer)
+    .then(() => { $("#dlgPlato").close(); toast(editandoId ? "Plato actualizado" : "Plato agregado"); })
+    .catch(() => toast("No se pudo guardar el plato"));
+});
+
+function borrarPlato(id){
+  const m = menu[id]; if(!m) return;
+  if(!confirm(`¿Borrar "${m.nombre}" de la carta?`)) return;
+  db.ref("menu/" + id).remove().then(() => toast("Plato borrado")).catch(() => toast("No se pudo borrar"));
+}
+
+function alternarDestacado(id){
+  const m = menu[id]; if(!m) return;
+  db.ref("menu/" + id + "/destacado").set(!m.destacado);
+}
+function alternarDisponible(id){
+  const m = menu[id]; if(!m) return;
+  db.ref("menu/" + id + "/disponible").set(m.disponible === false);
+}
+
+/* ---------- Carta: orden ---------- */
+function moverPlato(id, dir){
+  const m = menu[id]; if(!m) return;
+  const cat = m.categoria || "Otros";
+  const { cats } = ordenMenu();
+  const lista = (cats[cat] || []).slice();
+  const i = lista.indexOf(id);
+  const j = i + dir;
+  if(i < 0 || j < 0 || j >= lista.length) return;
+  [lista[i], lista[j]] = [lista[j], lista[i]];
+  const up = {};
+  lista.forEach((pid, k) => up["menu/" + pid + "/orden"] = k);
+  db.ref().update(up).catch(() => toast("No se pudo reordenar"));
+}
+
+function moverCategoria(cat, dir){
+  const { catNames } = ordenMenu();
+  const i = catNames.indexOf(cat);
+  const j = i + dir;
+  if(i < 0 || j < 0 || j >= catNames.length) return;
+  const lista = catNames.slice();
+  [lista[i], lista[j]] = [lista[j], lista[i]];
+  const obj = {};
+  lista.forEach((c, k) => obj[c] = k);
+  db.ref("config/catOrden").set(obj).catch(() => toast("No se pudo reordenar"));
+}
+
+/* ---------- Carta de ejemplo ---------- */
+const SEED = [
+  ["Entradas","Empanadas de carne (x3)",6500,"Con salsa criolla"],
+  ["Entradas","Provoleta",7800,"A la parrilla"],
+  ["Principales","Milanesa napolitana",14500,"Con papas fritas"],
+  ["Principales","Pizza muzzarella",12000,"Grande, 8 porciones"],
+  ["Bebidas","Gaseosa 500 ml",3200,""],
+  ["Bebidas","Cerveza artesanal",5200,"Pinta"],
+  ["Postres","Flan con dulce de leche",5500,""]
+];
+function seed(){
+  SEED.forEach(([c,n,p,d]) =>
+    db.ref("menu").push({ categoria:c, nombre:n, precio:p, desc:d, disponible:true }));
+  toast("Carta de ejemplo cargada");
+}
+
+/* ============================================================
+   GENERADOR DE QR
+   ============================================================ */
+function generarQR(base, n){
+  if(typeof qrcode !== "function"){
+    toast("No se pudo cargar la librería de QR. Revisá la conexión.");
+    return;
+  }
+  const nombre = esc(cfg.nombre || "");
+  let out = "";
+
+  for(let i = 1; i <= n; i++){
+    let url;
+    try{
+      const u = new URL(base);
+      u.searchParams.set("mesa", String(i));
+      url = u.toString();
+    }catch(e){
+      url = base + (base.includes("?") ? "&" : "?") + "mesa=" + i;
+    }
+    let svg = "";
+    try{
+      const qr = qrcode(0, "M");
+      qr.addData(url);
+      qr.make();
+      try{ svg = qr.createSvgTag({ cellSize: 6, margin: 8, scalable: true }); }
+      catch(e){ svg = qr.createSvgTag(6, 8); }
+    }catch(err){
+      svg = `<div style="padding:20px;font-size:12px">No se pudo generar</div>`;
+    }
+    out += `<div class="qr-card">
+      ${svg}
+      <b>Mesa ${i}</b>
+      ${nombre ? `<small>${nombre}</small>` : ""}
+      <small>${esc(url)}</small>
+    </div>`;
+  }
+  qrHtml = out;
+  draw();
+  toast(n + " QR generados");
+}
+
+function imprimirQR(){
+  if(!qrHtml){ toast("Primero generá los QR"); return; }
+  imprimir("qr", qrHtml);
+}
+
+/* ============================================================
+   IMPRESIÓN
+   ============================================================ */
+function imprimir(modo, html){
+  const area = $("#printArea");
+  area.innerHTML = html;
+  document.body.classList.add("printing", modo);
+
+  const limpiar = () => {
+    document.body.classList.remove("printing", modo);
+    area.innerHTML = "";
+    window.removeEventListener("afterprint", limpiar);
+  };
+  window.addEventListener("afterprint", limpiar);
+  try{ window.print(); }catch(e){ limpiar(); }
+  setTimeout(limpiar, 60000);
+}
+
+/* ============================================================
+   FIREBASE: suscripciones
+   ============================================================ */
+let conectado = false;
+
+function iniciar(){
+  db.ref(".info/connected").on("value", s => {
+    conectado = s.val() === true;
+    if(!conectado) toast("Sin conexión con la base");
+  });
+
+  db.ref("config").on("value", s => {
+    cfg = s.val() || {};
+    if(tab === "loc" || tab === "car") draw();
+  });
+
+  db.ref("menu").on("value", s => {
+    menu = s.val() || {};
+    draw();
+  });
+
+  db.ref("pedidos").on("value", s => {
+    pedidos = s.val() || {};
+    const ids = Object.keys(pedidos);
+    const nuevos = ids.filter(i => !seenPed.has(i) && pedidos[i].estado === "nuevo");
+    if(!primeraPed && nuevos.length){
+      campana();
+      setTimeout(campana, 750);
+      if(navigator.vibrate) navigator.vibrate([150,90,150]);
+    }
+    seenPed = new Set(ids);
+    primeraPed = false;
+
+    pendientesNuevos = ids.filter(i => !pedidos[i].cerrado && pedidos[i].estado === "nuevo").length;
+    actualizarTitulo();
+    draw();
+  });
+
+  db.ref("llamados").on("value", s => {
+    llamados = s.val() || {};
+    const ids = Object.keys(llamados);
+    const nuevos = ids.filter(i => !seenLla.has(i) && !llamados[i].atendido);
+    if(!primeraLla && nuevos.length){
+      campana();
+      setTimeout(campana, 750);
+    }
+    seenLla = new Set(ids);
+    primeraLla = false;
+    draw();
+  });
+}
+
+/* ============================================================
+   PESTAÑAS
+   ============================================================ */
+$("#tabs").addEventListener("click", e => {
+  const b = e.target.closest("button[data-t]");
+  if(!b) return;
+  tab = b.dataset.t;
+  $$all("#tabs button").forEach(x => {
+    const on = x === b;
+    x.classList.toggle("on", on);
+    x.setAttribute("aria-selected", on ? "true" : "false");
+  });
+  draw();
+});
+
+/* ============================================================
+   HEADER: sonido, pantalla completa, salir
+   ============================================================ */
+$("#btnSnd").onclick = activarSonido;
+
+$("#btnFull").onclick = () => {
+  if(!document.fullscreenElement){
+    (document.documentElement.requestFullscreen || document.documentElement.webkitRequestFullscreen || (()=>{})).call(document.documentElement);
+  }else{
+    (document.exitFullscreen || document.webkitExitFullscreen || (()=>{})).call(document);
+  }
+};
+
+$("#btnSalir").onclick = () => {
+  try{ sessionStorage.removeItem("cocina_ok"); }catch(e){}
+  location.reload();
+};
+
+/* ============================================================
+   PUERTA DEL PIN
+   ============================================================ */
+let pinCorrecto = null;
+
+function mostrarGate(){
+  document.body.classList.add("locked");
+  $("#gate").hidden = false;
+  setTimeout(() => $("#pinInput").focus(), 60);
+}
+
+$("#gateForm").addEventListener("submit", e => {
+  e.preventDefault();
+  const valor = $("#pinInput").value.trim();
+  const esperado = String(cfg.pin || "1234");
+
+  if(valor && valor === esperado){
+    try{ sessionStorage.setItem("cocina_ok","1"); }catch(err){}
+    $("#gate").hidden = true;
+    document.body.classList.remove("locked");
+    $("#pinErr").textContent = "";
+    arrancarPanel();
+  }else{
+    $("#pinErr").textContent = "PIN incorrecto. Probá de nuevo.";
+    $("#pinInput").value = "";
+    $("#pinInput").focus();
+  }
+});
+
+let panelIniciado = false;
+function arrancarPanel(){
+  if(panelIniciado) return;
+  panelIniciado = true;
+  draw();
+  iniciar();
+}
+
+/* ---------- Arranque ---------- */
+db.ref("config/pin").once("value").then(snap => {
+  pinCorrecto = snap.val();
+  let ok = false;
+  try{ ok = sessionStorage.getItem("cocina_ok") === "1"; }catch(e){}
+  if(ok){
+    arrancarPanel();
+  }else{
+    mostrarGate();
+  }
+}).catch(() => {
+  // Si falla la lectura (reglas, sin red), igual pedimos PIN local
+  mostrarGate();
+});
+
+/* Atajo: al presionar "/" en Pedidos, enfoca el primer botón de acción */
+document.addEventListener("keydown", e => {
+  if(e.key === "Escape"){
+    const d = document.querySelector("dialog[open]");
+    if(d) d.close();
+  }
+});
+</script>
+</body>
+</html>
